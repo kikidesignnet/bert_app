@@ -1,2 +1,7 @@
 bertenv/
 app/models/pytorch_model.bin
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
