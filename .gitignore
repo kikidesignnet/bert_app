@@ -1,5 +1,6 @@
 bertenv/
 app/models/pytorch_model.bin
+.env
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
