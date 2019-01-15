@@ -19,7 +19,6 @@ pluggy==0.8.1
 py==1.7.0
 pytest==4.1.1
 python-dateutil==2.7.5
-pytorch-pretrained-bert==0.4.0
 requests==2.21.0
 rmate==1.0.3
 s3transfer==0.1.13
