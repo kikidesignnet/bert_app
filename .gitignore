@@ -1,6 +1,7 @@
 bertenv/
 app/models/pytorch_model.bin
 .env
+app/__pycache__/routes.cpython-36.pyc
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
