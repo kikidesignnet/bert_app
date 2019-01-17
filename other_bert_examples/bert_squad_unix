@@ -1,0 +1,28 @@
+#!/bin/sh
+export SQUAD_DIR='/data/squad'
+
+mkdir /data/squad
+cd /data/squad
+
+wget https://rajpurkar.github.io/SQuAD-explorer/dataset/train-v1.1.json
+wget https://rajpurkar.github.io/SQuAD-explorer/dataset/dev-v1.1.json
+wget https://github.com/allenai/bi-att-flow/blob/master/squad/evaluate-v1.1.py
+
+cd /notebooks/pytorch-pretrained-BERT/examples
+
+python run_squad.py \
+  --bert_model bert-base-uncased \
+  --do_train \
+  --do_predict \
+  --do_lower_case \
+  --train_file $SQUAD_DIR/train-v1.1.json \
+  --predict_file $SQUAD_DIR/dev-v1.1.json \
+  --train_batch_size 12 \
+  --learning_rate 3e-5 \
+  --num_train_epochs 2.0 \
+  --max_seq_length 384 \
+  --doc_stride 128 \
+  --fp16 \
+  --loss_scale 128 \
+  --gradient_accumulation_steps 2 \
+  --output_dir /tmp/debug_squad/

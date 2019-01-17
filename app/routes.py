@@ -2,6 +2,10 @@ from flask import render_template, flash, redirect
 from app import app
 from app.forms import QueryForm
 from pytorch_pretrained_bert import BertTokenizer, BertForQuestionAnswering
+#CHANGES: This step produces warning "Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex."
+
+#CHANGES: WARNING: Do not use the development server in a production environment. Use a production WSGI server instead.
+
 #from app.pretrainedBERT.examples import run_squad
 #import pytorch_pretrained_bert.examples.run_squad
 
@@ -9,7 +13,8 @@ import torch
 import os
 
 # Load pre-trained model tokenizer (vocabulary)
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+#tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased',do_lower_case=True)
 #set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -17,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 filename=os.path.join(app.root_path, 'models', 'pytorch_model.bin')
 model_state_dict = torch.load(filename, map_location='cpu')
 model = BertForQuestionAnswering.from_pretrained('bert-base-uncased',state_dict=model_state_dict)
-model.to(device) #DO I NEED TO DO ANYTHING WITH THIS?
+model.to(device) 
 model.eval()
 
 
@@ -45,7 +50,8 @@ def index():
         input_mask = torch.tensor([1 for i in range(len(all_segids))])
         input_mask=input_mask.view(1,-1)
         # Predict all tokens
-        start_logits, end_logits = model(tokens_tensor, segments_tensors,input_mask)
+        with torch.no_grad(): #https://discuss.pytorch.org/t/model-eval-vs-with-torch-no-grad/19615/8
+            start_logits, end_logits = model(tokens_tensor, segments_tensors,input_mask)
         start_ind=torch.argmax(start_logits).item()
         end_ind=torch.argmax(end_logits).item()
         the_answer=all_tokens[start_ind:end_ind+1]
