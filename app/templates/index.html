@@ -1,14 +1,20 @@
 {% extends "base.html" %}
 
+
 {% block content %}
     <h1>Input semantic search info</h1>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <ul>
             <li>{{ the_document }}</li>
-            <li>{{ the_query }}</li>
-            <li>{{ the_answer }}</li>
+            <li>Your Wikipedia Search: {{ the_wik_search }}</li>
+            <li>Your Query: {{ the_query }}</li>
+            <li>The Answer: {{ the_answer }}</li>
         </ul>
+        <p>
+            {{ form.the_wik_search.label }}<br>
+            {{ form.the_wik_search(size=32) }}
+        </p>
         <p>
             {{ form.the_document.label }}<br>
             {{ form.the_document(size=32) }}
@@ -18,7 +24,22 @@
             {{ form.the_query(size=32) }}
         </p>
         
-        <hr>
+        
         <p>{{ form.submit() }}</p>
+        <script>
+            function myFunction(){
+                x=document.getElementById("myIframe");
+                x.src="https://en.wikipedia.org/wiki/Janis_Joplin"
+                } 
+        </script>
+        <button type="button" onclick="myFunction()">Click Me!</button>
+        <hr>
+    <iframe id="myIframe" src="https://en.wikipedia.org/wiki/Jimi_Hendrix" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> 
+    <!-- <iframe src= {{ wik_url }} frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> -->
+    
     </form>
-{% endblock %}
+    <!-- <iframe id="myIframe" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> -->
+
+    
+    {% endblock %}
+

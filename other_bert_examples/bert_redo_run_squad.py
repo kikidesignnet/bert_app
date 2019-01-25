@@ -2,13 +2,17 @@ import torch
 import os
 SQUAD_DIR='/Users/davidbressler/pythonstuff/bert_app/app/models'
 
-os.chdir('/Users/davidbressler/pythonstuff/pytorch-pretrained-BERT/examples')
+os.chdir('/Users/davidbressler/pythonstuff/bert_app/app/pretrainedBERT/examples')
 
 from pytorch_pretrained_bert import BertTokenizer, BertForQuestionAnswering
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 import run_squad
 import collections
 import numpy as np
+#from bs4 import BeautifulSoup
+#from lxml import html
+#import requests
+import wikipedia
 
 
 #set device
@@ -19,6 +23,9 @@ tokenizer = BertTokenizer.from_pretrained('bert-base-uncased',do_lower_case=True
 model_state_dict = torch.load('/Users/davidbressler/pythonstuff/bert_app/app/models/pytorch_model.bin', map_location='cpu')
 model = BertForQuestionAnswering.from_pretrained('bert-base-uncased',state_dict=model_state_dict)
 model.to(device) 
+
+
+
 
 
 #dev-v1.1.json is the test dataset
@@ -147,6 +154,16 @@ for start_index in start_indexes:
 
 
 #bert_app routes redo, with eval_examples approach:
+
+#r = requests.get('https://en.wikipedia.org/wiki/Jimi_Hendrix')
+#soup = BeautifulSoup(r.text, "lxml")
+#soup = BeautifulSoup(r.text, "html.parser")
+#document=soup.get_text().strip()
+
+search_term="Jimmy Hendrix"
+wik_page=wikipedia.search(search_term,results=1)
+p = wikipedia.page(wik_page[0])
+document = p.content # Content of page.
 
 document='The University of Chicago (UChicago, Chicago, or U of C) is a private research university in Chicago. The university, established in 1890, consists of The College, various graduate programs, interdisciplinary committees organized into four academic research divisions and seven professional schools. Beyond the arts and sciences, Chicago is also well known for its professional schools, which include the Pritzker School of Medicine, the University of Chicago Booth School of Business, the Law School, the School of Social Service Administration, the Harris School of Public Policy Studies, the Graham School of Continuing Liberal and Professional Studies and the Divinity School. The university currently enrolls approximately 5,000 students in the College and around 15,000 students overall.'
 query='What kind of university is the University of Chicago?'

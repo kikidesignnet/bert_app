@@ -4,6 +4,7 @@ from app.forms import QueryForm
 from pytorch_pretrained_bert import BertTokenizer, BertForQuestionAnswering
 from app.pretrainedBERT.examples import run_squad
 from torch.utils.data import TensorDataset
+#from bs4 import BeautifulSoup
 
 #CHANGES: This step produces warning "Better speed can be achieved with apex installed from https://www.github.com/nvidia/apex."
 
@@ -14,6 +15,8 @@ from torch.utils.data import TensorDataset
 import torch
 import os
 import collections
+import wikipedia
+
 
 
 # Load pre-trained model tokenizer (vocabulary)
@@ -37,6 +40,12 @@ def index():
     form= QueryForm()
     if form.validate_on_submit():
         
+        search_term="Jimmy Hendrix"
+        wik_page=wikipedia.search(search_term,results=1)
+        p = wikipedia.page(wik_page[0])
+        paragraph_text = p.content # Content of page.
+        wik_url=p.url
+
         query=form.the_query.data
         paragraph_text=form.the_document.data
 
@@ -220,13 +229,13 @@ def index():
         # end_ind=torch.argmax(end_logits).item()
         #the_answer=all_tokens[start_ind:end_ind+1]
 
-        return render_template('index.html',title='Home', form=form, the_document=form.the_document.data, the_query=form.the_query.data, the_answer=the_answer)
+        return render_template('index.html',title='Home', form=form, wik_url=wik_url, the_wik_search=form.the_wik_search.data, the_document=form.the_document.data, the_query=form.the_query.data, the_answer=the_answer)
 
         #flash('Your Query: {}'.format(
         #    form.the_query.data))
         #flash('The Document: {}'.format(
         #    form.the_document.data))
         #return redirect('/index')
-    return render_template('index.html',title='Home', form=form, the_document=None, the_query=None, the_answer=None)
+    return render_template('index.html',title='Home', form=form, wik_url=None, the_wik_search=None, the_document=None, the_query=None, the_answer=None)
 
 
