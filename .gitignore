@@ -3,6 +3,7 @@ app/models/pytorch_model.bin
 .env
 app/__pycache__/
 app/__pycache__/routes.cpython-36.pyc
+__pycache__/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
