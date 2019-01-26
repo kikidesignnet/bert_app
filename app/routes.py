@@ -78,7 +78,7 @@ def index():
                 prev_is_whitespace = False
             char_to_word_offset.append(len(doc_tokens) - 1)
         
-        doc_tokens=doc_tokens[:2000]
+        doc_tokens=doc_tokens[:1000]
 
         # total_num_doc_tokens=len(doc_tokens)
         # cutup_doc_tokens=[]

@@ -6,13 +6,9 @@
         <body onload="grabTheData()">
 {% block content %}
     <h1>WikiNLS.com: Wikipedia Natural Language Search</h1>
-    <h3>For speed, WikiNLS only works on the first 2000 words of the Wikipedia article (approximately 10 paragraphs).</h3>
-    <h3>After hitting "submit" below, you must wait 30 seconds.</h3>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
-        <ul>
-            <li id = the_wik_url >{{ wik_url }}</li>
-        </ul>
+        <p id = the_wik_url >{{ wik_url }}</p>
         <p>
             {{ form.the_wik_search.label }}<br>
             {{ form.the_wik_search(size=32) }}
@@ -22,9 +18,8 @@
             {{ form.the_query(size=32) }}
         </p>
         
-
+        <p>For speed, WikiNLS only works on the first 1000 words of the Wikipedia article (~10 paragraphs).</p>
         <p>{{ form.submit() }}</p>
-        <p>Your answer:</p>
         <p>{{ the_answer }}</p>
         <script>
             function grabTheData(){
