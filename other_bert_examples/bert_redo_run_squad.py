@@ -28,6 +28,9 @@ model.to(device)
 
 
 
+
+
+
 #dev-v1.1.json is the test dataset
 predict_file='/Users/davidbressler/pythonstuff/squad_data/dev-v1.1.json'
 #eval_examples is a list of 10570 'SquadExample' objects
@@ -153,6 +156,9 @@ for start_index in start_indexes:
 
 
 
+
+
+
 #bert_app routes redo, with eval_examples approach:
 
 #r = requests.get('https://en.wikipedia.org/wiki/Jimi_Hendrix')
@@ -162,11 +168,18 @@ for start_index in start_indexes:
 
 search_term="Jimmy Hendrix"
 wik_page=wikipedia.search(search_term,results=1)
-p = wikipedia.page(wik_page[0])
-document = p.content # Content of page.
+try:
+    p = wikipedia.page(wik_page[0])
+except wikipedia.exceptions.DisambiguationError as e:  
+    #print(e.options)
+    p = wikipedia.page(e.options[0])
+#p = wikipedia.page(wik_page[0])
 
-document='The University of Chicago (UChicago, Chicago, or U of C) is a private research university in Chicago. The university, established in 1890, consists of The College, various graduate programs, interdisciplinary committees organized into four academic research divisions and seven professional schools. Beyond the arts and sciences, Chicago is also well known for its professional schools, which include the Pritzker School of Medicine, the University of Chicago Booth School of Business, the Law School, the School of Social Service Administration, the Harris School of Public Policy Studies, the Graham School of Continuing Liberal and Professional Studies and the Divinity School. The university currently enrolls approximately 5,000 students in the College and around 15,000 students overall.'
-query='What kind of university is the University of Chicago?'
+document = p.content # Content of page.
+query='When was he born?'
+
+#document='The University of Chicago (UChicago, Chicago, or U of C) is a private research university in Chicago. The university, established in 1890, consists of The College, various graduate programs, interdisciplinary committees organized into four academic research divisions and seven professional schools. Beyond the arts and sciences, Chicago is also well known for its professional schools, which include the Pritzker School of Medicine, the University of Chicago Booth School of Business, the Law School, the School of Social Service Administration, the Harris School of Public Policy Studies, the Graham School of Continuing Liberal and Professional Studies and the Divinity School. The university currently enrolls approximately 5,000 students in the College and around 15,000 students overall.'
+#query='What kind of university is the University of Chicago?'
 #document='Nikola Tesla (Serbian Cyrillic: Никола Тесла; 10 July 1856 – 7 January 1943) was a Serbian American inventor, electrical engineer, mechanical engineer, physicist, and futurist best known for his contributions to the design of the modern alternating current (AC) electricity supply system.'
 #query='Who was Tesla?'
 #query='In what year was Nikola Tesla born?'
@@ -195,6 +208,7 @@ for c in paragraph_text:
         prev_is_whitespace = False
     char_to_word_offset.append(len(doc_tokens) - 1)
 
+doc_tokens=doc_tokens[:2000]
 
 #eval_examples is a list of 10570 'SquadExample' objects
 #just using it as a format placeholder
@@ -212,13 +226,25 @@ eval_examples_routes = [run_squad.SquadExample(
     start_position=None,
     end_position=None)]
 
+#docstride: When splitting up a long document into chunks, how much stride to take between chunks.
+# We can have documents that are longer than the maximum sequence length.
+        # To deal with this we do a sliding window approach, where we take chunks
+        # of the up to our max length with a stride of `doc_stride`.
+
+#eval_features is a list of 'run_squad.InputFeatures' objects
+#each object has fields for tokens, input_mask, input_ids, segment_ids, etc.
+#input_mask: I think all the examples have the same length (max_seq_length), so input_mask is just 1's (for good input) and 0's (right-padding)
+#input_ids: numericalized tokens, then 0's (right-padding)
+#segment_ids: 0's for query positions, 1's for document positions, then 0's (right-padding)
 eval_features_routes = run_squad.convert_examples_to_features(
             examples=eval_examples_routes,
             tokenizer=tokenizer,
-            max_seq_length=384,
-            doc_stride=128,
+            max_seq_length=400,#384
+            doc_stride=300,#128
             max_query_length=64,
             is_training=False)
+
+print(len(eval_features_routes))
 
 #all_input_ids, all_input_mask, and all_segment_ids are Tensors w/ size([100, 384])
 #all_example_index is just list w/ #s 0:99
@@ -229,6 +255,10 @@ all_example_index_routes = torch.arange(all_input_ids_routes.size(0), dtype=torc
 eval_data_routes = TensorDataset(all_input_ids_routes, all_input_mask_routes, all_segment_ids_routes, all_example_index_routes)
 
 model.eval()
+
+
+
+#all these should be size [bs,384]
 input_ids_routes=all_input_ids_routes
 input_mask_routes=all_input_mask_routes
 segment_ids_routes=all_segment_ids_routes
@@ -240,6 +270,135 @@ segment_ids_routes = segment_ids_routes.to(device)
 #batch_start_logits and batch_end_logits are both size [bs,384]
 with torch.no_grad():
     batch_start_logits_routes, batch_end_logits_routes = model(input_ids_routes, segment_ids_routes, input_mask_routes)
+
+
+
+
+
+
+#THIS SECTION TRYING A NEW APPROACH
+#THIS SECTION TRYING A NEW APPROACH
+#THIS SECTION TRYING A NEW APPROACH
+#THIS SECTION TRYING A NEW APPROACH
+RawResult = collections.namedtuple("RawResult",
+                                   ["unique_id", "start_logits", "end_logits"])
+_PrelimPrediction = collections.namedtuple(  # pylint: disable=invalid-name
+    "PrelimPrediction",
+    ["feature_index", "start_index", "end_index", "start_logit", "end_logit"])
+predict_batch_size=8
+all_results = []
+for i, example_index in enumerate(example_indices_routes):
+    #start_logits and end_logits are both lists of len 384
+    start_logits_routes = batch_start_logits_routes[i].detach().cpu().tolist()
+    end_logits_routes = batch_end_logits_routes[i].detach().cpu().tolist()
+    eval_feature_routes = eval_features_routes[example_index.item()]
+    unique_id_routes = int(eval_feature_routes.unique_id)
+    all_results.append(RawResult(unique_id=unique_id_routes,
+                                    start_logits=start_logits_routes,
+                                    end_logits=end_logits_routes))
+
+unique_id_to_result = {}
+for result in all_results:
+    unique_id_to_result[result.unique_id] = result
+
+#n_best_size: the total number of n-best predictions to generate in the nbest_predictions.json
+n_best_size=20
+max_answer_length=30
+prelim_predictions = []
+for (feature_index, feature) in enumerate(eval_features_routes):
+    result = unique_id_to_result[feature.unique_id]
+    start_indexes = run_squad._get_best_indexes(result.start_logits, n_best_size)
+    end_indexes = run_squad._get_best_indexes(result.end_logits, n_best_size)
+    for start_index in start_indexes:
+        for end_index in end_indexes:
+            # We could hypothetically create invalid predictions, e.g., predict
+            # that the start of the span is in the question. We throw out all
+            # invalid predictions.
+            if start_index >= len(feature.tokens):
+                continue
+            if end_index >= len(feature.tokens):
+                continue
+            if start_index not in feature.token_to_orig_map:
+                continue
+            if end_index not in feature.token_to_orig_map:
+                continue
+            if not feature.token_is_max_context.get(start_index, False):
+                continue
+            if end_index < start_index:
+                continue
+            length = end_index - start_index + 1
+            if length > max_answer_length:
+                continue
+            prelim_predictions.append(
+                _PrelimPrediction(
+                    feature_index=feature_index,
+                    start_index=start_index,
+                    end_index=end_index,
+                    start_logit=result.start_logits[start_index],
+                    end_logit=result.end_logits[end_index]))
+
+#prelim_predictions is a list of PrelimPrediction's
+#example: PrelimPrediction(feature_index=0, start_index=30, end_index=31, start_logit=7.1346, end_logit=5.40855)
+prelim_predictions = sorted(
+    prelim_predictions,
+    key=lambda x: (x.start_logit + x.end_logit),
+    reverse=True)
+
+_NbestPrediction = collections.namedtuple(  # pylint: disable=invalid-name
+    "NbestPrediction", ["text", "start_logit", "end_logit"])
+
+seen_predictions = {}
+nbest = []
+for pred in prelim_predictions:
+    if len(nbest) >= n_best_size:
+        break
+    feature = eval_features_routes[pred.feature_index]
+    tok_tokens = feature.tokens[pred.start_index:(pred.end_index + 1)]
+    orig_doc_start = feature.token_to_orig_map[pred.start_index]
+    orig_doc_end = feature.token_to_orig_map[pred.end_index]
+    orig_tokens = doc_tokens[orig_doc_start:(orig_doc_end + 1)]
+    tok_text = " ".join(tok_tokens)
+    # De-tokenize WordPieces that have been split off.
+    tok_text = tok_text.replace(" ##", "")
+    tok_text = tok_text.replace("##", "")
+    # Clean whitespace
+    tok_text = tok_text.strip()
+    tok_text = " ".join(tok_text.split())
+    orig_text = " ".join(orig_tokens)
+    final_text = run_squad.get_final_text(tok_text, orig_text, do_lower_case=True, verbose_logging=False)
+    if final_text in seen_predictions:
+        continue
+    seen_predictions[final_text] = True
+    nbest.append(
+        _NbestPrediction(
+            text=final_text,
+            start_logit=pred.start_logit,
+            end_logit=pred.end_logit))
+
+# In very rare edge cases we could have no valid predictions. So we
+# just create a nonce prediction in this case to avoid failure.
+if not nbest:
+    nbest.append(
+        _NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
+
+assert len(nbest) >= 1
+
+total_scores = []
+for entry in nbest:
+    total_scores.append(entry.start_logit + entry.end_logit)
+
+probs = run_squad._compute_softmax(total_scores)
+
+print(nbest[0].text)
+
+#END SECTION TRYING A NEW APPROACH
+#END SECTION TRYING A NEW APPROACH
+#END SECTION TRYING A NEW APPROACH
+#END SECTION TRYING A NEW APPROACH
+
+
+
+
 
 i=0
 example_index_routes=example_indices_routes[0]
@@ -331,16 +490,17 @@ for pred in prelim_predictions:
             text=final_text,
             start_logit=pred.start_logit,
             end_logit=pred.end_logit))
-    # In very rare edge cases we could have no valid predictions. So we
-    # just create a nonce prediction in this case to avoid failure.
-    if not nbest:
-        nbest.append(
-            _NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
-    assert len(nbest) >= 1
-    total_scores = []
-    for entry in nbest:
-        total_scores.append(entry.start_logit + entry.end_logit)
-    probs = run_squad._compute_softmax(total_scores)
+
+# In very rare edge cases we could have no valid predictions. So we
+# just create a nonce prediction in this case to avoid failure.
+if not nbest:
+    nbest.append(
+        _NbestPrediction(text="empty", start_logit=0.0, end_logit=0.0))
+assert len(nbest) >= 1
+total_scores = []
+for entry in nbest:
+    total_scores.append(entry.start_logit + entry.end_logit)
+probs = run_squad._compute_softmax(total_scores)
 
 print(nbest[0].text)
 

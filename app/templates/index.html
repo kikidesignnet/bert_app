@@ -1,45 +1,57 @@
-{% extends "base.html" %}
 
-
+<html>
+        <head>
+            <title> WikiNLS.com: Wikipedia Natural Language Search</title>
+        </head>
+        <body onload="grabTheData()">
 {% block content %}
-    <h1>Input semantic search info</h1>
+    <h1>WikiNLS.com: Wikipedia Natural Language Search</h1>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <ul>
-            <li>{{ the_document }}</li>
             <li>Your Wikipedia Search: {{ the_wik_search }}</li>
             <li>Your Query: {{ the_query }}</li>
             <li>The Answer: {{ the_answer }}</li>
+            <li id = the_wik_url >{{ wik_url }}</li>
         </ul>
         <p>
             {{ form.the_wik_search.label }}<br>
             {{ form.the_wik_search(size=32) }}
         </p>
         <p>
-            {{ form.the_document.label }}<br>
-            {{ form.the_document(size=32) }}
-        </p>
-        <p>
             {{ form.the_query.label }}<br>
             {{ form.the_query(size=32) }}
         </p>
         
-        
+
         <p>{{ form.submit() }}</p>
         <script>
-            function myFunction(){
+            function grabTheData(){
+                x=document.getElementById("the_wik_url")
+                some_data=x.innerHTML
+                y=document.getElementById("myIframe")
+                //y.innerHTML=some_data
+                y.src=some_data
+            }
+            /* function myFunction(){
                 x=document.getElementById("myIframe");
                 x.src="https://en.wikipedia.org/wiki/Janis_Joplin"
-                } 
+                } */ 
         </script>
-        <button type="button" onclick="myFunction()">Click Me!</button>
+        <!-- <button type="button" onclick="grabTheData()">Click Me!</button> -->
+        <!-- <button id="the_button" type="button" >Click Me!</button> -->
+        
         <hr>
-    <iframe id="myIframe" src="https://en.wikipedia.org/wiki/Jimi_Hendrix" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> 
-    <!-- <iframe src= {{ wik_url }} frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> -->
+    <iframe id="myIframe" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> 
+    <script>
+            //document.getElementById("submit").onclick = function() {grabTheData()};
+            //document.getElementById("submit").onload = function() {grabTheData()};
+    </script>
     
     </form>
     <!-- <iframe id="myIframe" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> -->
 
     
     {% endblock %}
-
+</body>
+</html>
