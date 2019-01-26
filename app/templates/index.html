@@ -6,12 +6,13 @@
         <body onload="grabTheData()">
 {% block content %}
     <h1>WikiNLS.com: Wikipedia Natural Language Search</h1>
+    <h3>Disclaimer: For speed, WikiNLS only works on the first 2000 words of the Wikipedia article (approximately 10 paragraphs).</h3>
+    <h3>After hitting "submit" below, you must wait 30 seconds.</h3>
     <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
         <ul>
             <li>Your Wikipedia Search: {{ the_wik_search }}</li>
             <li>Your Query: {{ the_query }}</li>
-            <li>The Answer: {{ the_answer }}</li>
             <li id = the_wik_url >{{ wik_url }}</li>
         </ul>
         <p>
@@ -25,6 +26,8 @@
         
 
         <p>{{ form.submit() }}</p>
+        <p>Your answer:</p>
+        <p>{{ the_answer }}</p>
         <script>
             function grabTheData(){
                 x=document.getElementById("the_wik_url")
@@ -42,7 +45,7 @@
         <!-- <button id="the_button" type="button" >Click Me!</button> -->
         
         <hr>
-    <iframe id="myIframe" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> 
+    <iframe id="myIframe" src="https://en.wikipedia.org/wiki/Janis_Joplin" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> 
     <script>
             //document.getElementById("submit").onclick = function() {grabTheData()};
             //document.getElementById("submit").onload = function() {grabTheData()};

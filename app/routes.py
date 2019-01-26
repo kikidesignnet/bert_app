@@ -297,6 +297,6 @@ def index():
         #flash('The Document: {}'.format(
         #    form.the_document.data))
         #return redirect('/index')
-    return render_template('index.html',title='Home', form=form, wik_url=None, the_wik_search=None, the_document=None, the_query=None, the_answer=None)
+    return render_template('index.html',title='Home', form=form, wik_url="https://en.wikipedia.org/wiki/Janis_Joplin", the_wik_search=None, the_query=None, the_answer="January 19, 1943")
 
 
