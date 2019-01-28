@@ -2,19 +2,21 @@
         <head>
             <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
             <title> WikiNLS.com: Wikipedia Natural Language Search</title>
-            <style> 
-                    
-                    h1 { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 24px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 26.4px; } 
-                    h2 { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 18px; font-style: normal; font-variant: normal; font-weight: 500; } 
-                    h3 { font-family: sans-serif; font-size: 18px; font-style: normal; font-variant: normal; font-weight: 900; line-height: 19px; } 
-                    p { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 20px; } 
-                    blockquote { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 21px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 30px; } 
+            <style>
+
+                    h1 { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 24px; font-style: normal; font-variant: normal; font-weight: 700; line-height: 26.4px; }
+                    h2 { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 18px; font-style: normal; font-variant: normal; font-weight: 500; }
+                    h3 { font-family: sans-serif; font-size: 18px; font-style: normal; font-variant: normal; font-weight: 900; line-height: 19px; }
+                    p { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 14px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 20px; }
+                    blockquote { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 21px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 30px; }
                     pre { font-family: "Hoefler Text", "Baskerville Old Face", Garamond, "Times New Roman", serif; font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 18.5714px; }
-                    
+
                     </style>
+                    <link rel="stylesheet" type="text/css" href="styles.css" media="all" />
         </head>
         <body onload="grabTheData()">
 {% block content %}
+        <div class="container">
         <h2>Wikipedia Natural Language Search</h2>
         <form action="" method="post" novalidate>
         {{ form.hidden_tag() }}
@@ -27,9 +29,9 @@
             {{ form.the_query.label }}<br>
             {{ form.the_query(size=32) }}
         </p>
-        
+
         <p>{{ form.submit() }}</p>
-        
+      </div>
         <script>
             function grabTheData(){
                 x=document.getElementById("the_wik_url")
@@ -38,7 +40,7 @@
                 //y.innerHTML=some_data
                 y.src=some_data
                 z=document.getElementById("loading")
-                //z.style.visibility = "hidden"; 
+                //z.style.visibility = "hidden";
                 z.style.display = "none";
                 document.getElementById("submit").onclick=get_loader
             }
@@ -51,16 +53,16 @@
             /* function myFunction(){
                 x=document.getElementById("myIframe");
                 x.src="https://en.wikipedia.org/wiki/Janis_Joplin"
-                } */ 
+                } */
         </script>
-        
+
         <hr>
         <h3>{{ the_answer }}</h3>
         <p id="loading">Loading (10 sec) ... <br /> </p>
         <!-- <button type="button" onclick="grabTheData()">Click Me!</button> -->
         <!-- <button id="the_button" type="button" >Click Me!</button> -->
         <hr>
-        <iframe id="myIframe" src="" frameborder="0" height="500" allowfullscreen style="width:100%;"></iframe> 
+        <iframe id="myIframe" src="" frameborder="0" height="500" allowfullscreen style="width:100%;"></iframe>
 
     </form>
     <!-- <iframe id="myIframe" src="" frameborder="0" allowfullscreen style="width:100%;height:100%;"></iframe> -->
